@@ -35,6 +35,18 @@ export const TacticalField = () => {
 
   return (
     <div className="relative w-full aspect-square glass-panel neon-border rounded-3xl overflow-hidden p-4">
+      {/* Tactical Roles Indicator */}
+      <div className="absolute top-6 left-6 z-30 flex flex-col gap-1">
+        <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-500/50 rounded-lg">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+          <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">BOWLING: MI</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded-lg">
+          <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+          <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">BATTING: CSK</span>
+        </div>
+      </div>
+
       {/* Result Overlay */}
       <AnimatePresence>
         {showResult && (
@@ -118,7 +130,7 @@ export const TacticalField = () => {
                 cx={f.x}
                 cy={f.y}
                 r={selectedFielder === f.id ? "14" : "10"}
-                fill={state.activeTeam === 'MI' ? '#3b82f6' : '#eab308'}
+                fill="#3b82f6"
                 className={`filter transition-all duration-300 ${selectedFielder === f.id ? 'drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]' : 'drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]'}`}
               />
               {selectedFielder === f.id && (
@@ -165,11 +177,11 @@ export const TacticalField = () => {
       <div className="absolute bottom-6 left-6 flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-blue-500 rounded-full" />
-          <span className="text-[10px] font-bold text-zinc-400">MI POSITIONING</span>
+          <span className="text-[10px] font-black text-blue-400 tracking-widest">MI (BOWLING)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-          <span className="text-[10px] font-bold text-zinc-400">CSK POSITIONING</span>
+          <span className="text-[10px] font-black text-yellow-400 tracking-widest">CSK (BATTING)</span>
         </div>
       </div>
 
