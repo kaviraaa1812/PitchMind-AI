@@ -23,7 +23,7 @@ export const TacticalField = () => {
   const [activeFielder, setActiveFielder] = useState<number | null>(null);
   const [selectedFielder, setSelectedFielder] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const { state, autoAlignField, applyTactics, updateFielderPosition } = useMatch();
+  const { state, autoAlignField, applyTactics, updateFielderPosition, setManualInput } = useMatch();
 
   const handleApply = () => {
     applyTactics();
@@ -109,7 +109,10 @@ export const TacticalField = () => {
               className="cursor-grab active:cursor-grabbing"
               onMouseEnter={() => setActiveFielder(f.id)}
               onMouseLeave={() => setActiveFielder(null)}
-              onClick={() => setSelectedFielder(f.id === selectedFielder ? null : f.id)}
+              onClick={() => {
+                setSelectedFielder(f.id === selectedFielder ? null : f.id);
+                setManualInput(state.manualInput + " " + f.name);
+              }}
             >
               <circle
                 cx={f.x}
@@ -136,14 +139,15 @@ export const TacticalField = () => {
                 strokeWidth="1"
                 strokeOpacity="0.2"
               />
-              {activeFielder === f.id && (
+              {/* Highlight if name matches console input */}
+              {(state.manualInput.toLowerCase().includes(f.name.toLowerCase()) || activeFielder === f.id) && (
                 <motion.text
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   x={f.x}
                   y={f.y - 20}
                   textAnchor="middle"
-                  className="fill-white text-[12px] font-bold pointer-events-none"
+                  className="fill-cyan-400 text-[14px] font-black uppercase tracking-widest pointer-events-none"
                 >
                   {f.name}
                 </motion.text>
@@ -152,9 +156,9 @@ export const TacticalField = () => {
           ))}
         </AnimatePresence>
 
-        {/* Batsman & Bowler */}
-        <circle cx="350" cy="380" r="12" fill="#ffffff" className="animate-pulse" />
-        <circle cx="350" cy="120" r="12" fill="#22d3ee" />
+        {/* Batters (Yellow) */}
+        <circle cx="350" cy="380" r="12" fill="#eab308" className="animate-pulse shadow-[0_0_20px_rgba(234,179,8,0.5)]" />
+        <circle cx="350" cy="120" r="12" fill="#eab308" />
       </svg>
 
       {/* Overlays */}

@@ -75,10 +75,14 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateFielderPosition = (id: number, x: number, y: number) => {
-    setState(prev => ({
-      ...prev,
-      fieldPositioning: prev.fieldPositioning.map(f => f.id === id ? { ...f, x, y } : f)
-    }));
+    setState(prev => {
+      const fielder = prev.fieldPositioning.find(f => f.id === id);
+      return {
+        ...prev,
+        fieldPositioning: prev.fieldPositioning.map(f => f.id === id ? { ...f, x, y } : f),
+        lastFeedback: `REAL-TIME ANALYSIS: ${fielder?.name} moved to (${Math.round(x)}, ${Math.round(y)}). This creates a ${x < 350 ? 'Off-Side' : 'On-Side'} trap. Dynamic win probability shifting...`
+      };
+    });
   };
 
   const autoAlignField = () => {
