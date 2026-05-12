@@ -18,6 +18,13 @@ interface MatchState {
   manualInput: string;
   rank: 'Bronze' | 'Silver' | 'Gold';
   fieldPositioning: any[];
+  userProfile: {
+    name: string;
+    xp: number;
+    level: number;
+    achievements: string[];
+    winRate: string;
+  };
 }
 
 interface MatchContextType {
@@ -27,6 +34,7 @@ interface MatchContextType {
   setManualInput: (input: string) => void;
   autoAlignField: () => void;
   applyTactics: () => void;
+  updateFielderPosition: (id: number, x: number, y: number) => void;
 }
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -49,6 +57,13 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     manualInput: '',
     rank: 'Gold',
     fieldPositioning: initialFielders,
+    userProfile: {
+      name: "Kavya Maharaja",
+      xp: 8400,
+      level: 12,
+      achievements: ["Tactical Master", "IPL Veteran", "Data Wizard"],
+      winRate: "68%"
+    }
   });
 
   const setActiveTeam = (team: 'MI' | 'CSK') => {
@@ -59,30 +74,38 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, manualInput: input }));
   };
 
-  const autoAlignField = () => {
-    setState(prev => ({ 
-      ...prev, 
-      fieldPositioning: prev.fieldPositioning.map(f => ({
-        ...f,
-        x: f.x + (Math.random() * 40 - 20),
-        y: f.y + (Math.random() * 40 - 20)
-      })),
-      lastFeedback: "Fielders auto-aligned to standard T20 Powerplay formation." 
+  const updateFielderPosition = (id: number, x: number, y: number) => {
+    setState(prev => ({
+      ...prev,
+      fieldPositioning: prev.fieldPositioning.map(f => f.id === id ? { ...f, x, y } : f)
     }));
   };
 
+  const autoAlignField = () => {
+    setState(prev => ({ 
+      ...prev, 
+      fieldPositioning: initialFielders.map(f => ({
+        ...f,
+        x: f.x + (Math.random() * 20 - 10),
+        y: f.y + (Math.random() * 20 - 10)
+      })),
+      lastFeedback: "Fielders auto-aligned to optimal defensive T20 formation." 
+    }));
+  };
 
   const applyTactics = () => {
     setState(prev => ({ ...prev, loading: true }));
     setTimeout(() => {
+      const wicketProb = Math.floor(Math.random() * 15) + 10;
       setState(prev => ({ 
         ...prev, 
         loading: false, 
-        lastFeedback: "Tactics applied successfully. Pressure index increased by 15%.",
-        tacticalIQ: Math.min(160, prev.tacticalIQ + 2)
+        lastFeedback: `Tactics executed. Wicket probability increased to ${wicketProb}%. Batsman pressure is now CRITICAL.`,
+        tacticalIQ: Math.min(160, prev.tacticalIQ + 3)
       }));
     }, 1500);
   };
+
 
   const submitTacticalMove = async (move: string) => {
     setState(prev => ({ ...prev, loading: true, manualInput: '' }));
@@ -108,7 +131,7 @@ export const MatchProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MatchContext.Provider value={{ state, submitTacticalMove, setActiveTeam, setManualInput, autoAlignField, applyTactics }}>
+    <MatchContext.Provider value={{ state, submitTacticalMove, setActiveTeam, setManualInput, autoAlignField, applyTactics, updateFielderPosition }}>
       {children}
     </MatchContext.Provider>
   );

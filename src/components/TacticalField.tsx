@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMatch } from '@/context/MatchContext';
+import { Zap } from 'lucide-react';
 
 
 export const initialFielders = [
@@ -21,10 +22,49 @@ export const initialFielders = [
 export const TacticalField = () => {
   const [activeFielder, setActiveFielder] = useState<number | null>(null);
   const [selectedFielder, setSelectedFielder] = useState<number | null>(null);
-  const { state, autoAlignField, applyTactics } = useMatch();
+  const [showResult, setShowResult] = useState(false);
+  const { state, autoAlignField, applyTactics, updateFielderPosition } = useMatch();
+
+  const handleApply = () => {
+    applyTactics();
+    setTimeout(() => {
+      setShowResult(true);
+      setTimeout(() => setShowResult(false), 4000);
+    }, 1500);
+  };
 
   return (
     <div className="relative w-full aspect-square glass-panel neon-border rounded-3xl overflow-hidden p-4">
+      {/* Result Overlay */}
+      <AnimatePresence>
+        {showResult && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            className="absolute inset-0 z-40 flex items-center justify-center p-8 pointer-events-none"
+          >
+            <div className="glass-panel border-cyan-500 bg-cyan-950/80 backdrop-blur-xl rounded-[40px] p-8 text-center shadow-[0_0_100px_rgba(34,211,238,0.3)]">
+              <div className="w-20 h-20 bg-cyan-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(34,211,238,0.6)]">
+                <Zap size={40} className="text-black" />
+              </div>
+              <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">TACTICS EXECUTED</h2>
+              <p className="text-cyan-400 font-mono text-sm mb-4 tracking-widest">{state.lastFeedback}</p>
+              <div className="flex justify-center gap-8 border-t border-cyan-500/30 pt-6">
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Tactical IQ</span>
+                  <span className="text-2xl font-black text-white">+{Math.floor(Math.random()*5)+2}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Momentum</span>
+                  <span className="text-2xl font-black text-green-500">RISING</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Tactical Analysis Overlay */}
       {state.loading && (
         <motion.div 
@@ -59,9 +99,14 @@ export const TacticalField = () => {
               key={f.id}
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
-              whileHover={{ scale: 1.2 }}
-              layout // Smooth transition for repositioning
-              className="cursor-pointer"
+              whileHover={{ scale: 1.1 }}
+              drag
+              dragConstraints={{ left: 0, right: 700, top: 0, bottom: 700 }}
+              onDragEnd={(e, info) => {
+                // Update the fielder position in the global state
+                updateFielderPosition(f.id, f.x + info.offset.x, f.y + info.offset.y);
+              }}
+              className="cursor-grab active:cursor-grabbing"
               onMouseEnter={() => setActiveFielder(f.id)}
               onMouseLeave={() => setActiveFielder(null)}
               onClick={() => setSelectedFielder(f.id === selectedFielder ? null : f.id)}
@@ -70,13 +115,13 @@ export const TacticalField = () => {
                 cx={f.x}
                 cy={f.y}
                 r={selectedFielder === f.id ? "14" : "10"}
-                fill={selectedFielder === f.id ? '#ffffff' : f.type === 'Aggressive' ? '#ef4444' : f.type === 'Defensive' ? '#22c55e' : '#3b82f6'}
+                fill={state.activeTeam === 'MI' ? '#3b82f6' : '#eab308'}
                 className={`filter transition-all duration-300 ${selectedFielder === f.id ? 'drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]' : 'drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]'}`}
               />
               {selectedFielder === f.id && (
                 <motion.circle 
                   cx={f.x} cy={f.y} r="20" 
-                  stroke="#22d3ee" strokeWidth="2" fill="none"
+                  stroke="white" strokeWidth="2" fill="none"
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1.2, opacity: 1 }}
                   transition={{ repeat: Infinity, duration: 1.5 }}
@@ -115,16 +160,12 @@ export const TacticalField = () => {
       {/* Overlays */}
       <div className="absolute bottom-6 left-6 flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-red-500 rounded-full" />
-          <span className="text-[10px] font-bold text-zinc-400">AGGRESSIVE</span>
-        </div>
-        <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-blue-500 rounded-full" />
-          <span className="text-[10px] font-bold text-zinc-400">STANDARD</span>
+          <span className="text-[10px] font-bold text-zinc-400">MI POSITIONING</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full" />
-          <span className="text-[10px] font-bold text-zinc-400">DEFENSIVE</span>
+          <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+          <span className="text-[10px] font-bold text-zinc-400">CSK POSITIONING</span>
         </div>
       </div>
 
@@ -136,7 +177,7 @@ export const TacticalField = () => {
           AUTO-ALIGN
         </button>
         <button 
-          onClick={applyTactics}
+          onClick={handleApply}
           disabled={state.loading}
           className={`px-4 py-2 text-black text-[10px] font-black tracking-widest rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)] transition-all active:scale-95 ${state.loading ? 'bg-zinc-800' : 'bg-cyan-500'}`}
         >
